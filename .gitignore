@@ -1,2 +1,4 @@
 .Rapp.history
 churn.r
+*.pyc
+.ipynb_checkpoints/

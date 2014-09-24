@@ -1,6 +1,8 @@
 from __future__ import division
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 __author__ = "Eric Chiang"
 __email__  = "eric[at]yhathq.com"
 
@@ -51,6 +53,51 @@ def calibration(prob,outcome,n_bins=10):
         # Squared distance between predicted and true times num of obs
         c += np.sum(in_bin) * ((predicted_prob - true_bin_prob) ** 2)
     return c / len(prob)
+
+def calibration_plot(prob,outcome,n_bins=10):
+    """Calibration histogram.
+
+    When predicting events at a given probability, how far is frequency
+    of positive outcomes from that probability?
+
+    prob: array_like, float
+        Probability estimates for a set of events
+
+    outcome: array_like, bool
+        If event predicted occurred
+
+    n_bins: int
+        Number of judgement categories to prefrom calculation over.
+        Prediction are binned based on probability, since "descrete" 
+        probabilities aren't required. 
+
+    """
+    prob = np.array(prob)
+    outcome = np.array(outcome)
+
+    c = 0.0
+    true_probs = []
+    predicted_probs = []
+
+    # Construct bins
+    judgement_bins = np.arange(n_bins + 1) / n_bins
+    # Which bin is each prediction in?
+    bin_num = np.digitize(prob,judgement_bins)
+    for j_bin in np.unique(bin_num):
+        # Is event in bin
+        in_bin = bin_num == j_bin
+        # Predicted probability taken as average of preds in bin
+        predicted_prob = np.mean(prob[in_bin])
+        predicted_probs.append(predicted_prob)
+        # How often did events in this bin actually happen?
+        true_bin_prob = np.mean(outcome[in_bin])
+        true_probs.append(true_bin_prob)
+        # Squared distance between predicted and true times num of obs
+        c += np.sum(in_bin) * ((predicted_prob - true_bin_prob) ** 2)
+
+    plt.plot(predicted_probs, true_probs)
+    plt.show()
+    return predicted_probs, true_probs
 
 def discrimination(prob,outcome,n_bins=10):
     """Discrimination measurement for a set of predictions.
